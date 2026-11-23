@@ -30,5 +30,5 @@ export async function POST(req: Request) {
     db.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
   ])
 
-  return ok({ reset: true, redirect: '/#/signup/etarnity/board-member' })
+  return ok({ reset: true, redirect: '/signup/etarnity/board-member' })
 }

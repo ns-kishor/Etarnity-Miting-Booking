@@ -14,13 +14,26 @@ export type Route =
   | { view: 'master'; section: 'dashboard' | 'members' | 'bookings' | 'settings' | 'activity' }
 
 /**
- * Hash router: implements the PRD's URL structure as hash fragments
- * (e.g. #/book/kishor-biswas, #/dashboard/requests, #/login-master).
+ * Gets the current path and query string from either the window hash or pathname.
  */
-export function parseHash(hash: string): Route {
-  const path = hash.replace(/^#/, '') || '/'
-  const clean = path.split('?')[0].replace(/\/+$/, '') || '/'
+export function getCurrentUrl(): string {
+  if (typeof window === 'undefined') return '/'
+  const hash = window.location.hash
+  if (hash && hash !== '#' && hash !== '#/') {
+    return hash.replace(/^#/, '')
+  }
+  return window.location.pathname + window.location.search
+}
+
+/**
+ * Parses a given path/hash into the application Route.
+ */
+export function parseHash(rawUrl: string): Route {
+  const path = (rawUrl || '/').replace(/^#/, '') || '/'
+  const [cleanPath, queryString = ''] = path.split('?')
+  const clean = cleanPath.replace(/\/+$/, '') || '/'
   const seg = clean.split('/').filter(Boolean)
+  const searchParams = new URLSearchParams(queryString)
 
   if (seg.length === 0) return { view: 'landing' }
   if (seg[0] === 'book') {
@@ -28,12 +41,12 @@ export function parseHash(hash: string): Route {
     return { view: 'booking', slug: seg[1] }
   }
   if (seg[0] === 'booking' && seg[1] === 'success') {
-    const ref = new URLSearchParams(path.split('?')[1] ?? '').get('ref') ?? ''
+    const ref = searchParams.get('ref') ?? ''
     return { view: 'booking-success', ref }
   }
   if (seg[0] === 'track') return { view: 'track' }
   if (seg[0] === 'signup' && seg[1] === 'etarnity' && seg[2] === 'board-member') {
-    const modeParam = new URLSearchParams(path.split('?')[1] ?? '').get('mode')
+    const modeParam = searchParams.get('mode')
     const mode = modeParam === 'signup' || modeParam === 'forgot' || modeParam === 'reset' ? modeParam : 'login'
     return { view: 'auth', mode }
   }
@@ -56,33 +69,55 @@ export function parseHash(hash: string): Route {
 }
 
 export function navigate(path: string, replace = false) {
-  const target = `#${path.startsWith('/') ? path : `/${path}`}`
+  if (typeof window === 'undefined') return
+  const target = path.startsWith('/') ? path : `/${path}`
+
+  if (window.location.hash && window.location.hash !== '#' && window.location.hash !== '#/') {
+    const hashTarget = `#${target}`
+    if (replace) {
+      history.replaceState(null, '', hashTarget)
+    } else {
+      window.location.hash = hashTarget
+    }
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    return
+  }
+
   if (replace) {
     history.replaceState(null, '', target)
-    window.dispatchEvent(new HashChangeEvent('hashchange'))
   } else {
-    window.location.hash = target
+    history.pushState(null, '', target)
+  }
+
+  try {
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  } catch {
+    window.dispatchEvent(new Event('popstate'))
   }
 }
 
 export function useHashRoute(): [Route, string] {
-  const [hash, setHash] = useState('')
-  const [route, setRoute] = useState<Route>({ view: 'landing' })
+  const [currentUrl, setCurrentUrl] = useState<string>(() => (typeof window !== 'undefined' ? getCurrentUrl() : '/'))
+  const [route, setRoute] = useState<Route>(() => (typeof window !== 'undefined' ? parseHash(getCurrentUrl()) : { view: 'landing' }))
 
   useEffect(() => {
     const update = () => {
-      const h = window.location.hash || '#/'
-      setHash(h)
-      setRoute(parseHash(h))
+      const url = getCurrentUrl()
+      setCurrentUrl(url)
+      setRoute(parseHash(url))
       // scroll to top on view change
       window.scrollTo({ top: 0 })
     }
     update()
     window.addEventListener('hashchange', update)
-    return () => window.removeEventListener('hashchange', update)
+    window.addEventListener('popstate', update)
+    return () => {
+      window.removeEventListener('hashchange', update)
+      window.removeEventListener('popstate', update)
+    }
   }, [])
 
-  return [route, hash]
+  return [route, currentUrl]
 }
 
 export function useNavigate() {

@@ -128,7 +128,7 @@ export const mailer = {
           ['Date & Time', fmtSlot(booking.date, booking.startTime, booking.endTime, booking.timezone)],
           ['Method', methodLabel(booking.method)],
         ])}`,
-      cta: { label: 'Open Dashboard', url: '/#/dashboard/requests' },
+      cta: { label: 'Open Dashboard', url: '/dashboard/requests' },
     }),
 
   bookingApprovedToVisitor: (
@@ -216,7 +216,7 @@ export const mailer = {
         <p>You have been invited to join <strong>${BRAND.name}</strong> as a board member on Etarnity Meeting. Please complete your registration using the invitation code below.</p>
         ${detailTable([['Invitation Code', `<span style="letter-spacing:1px;">${token}</span>`]])}
         <p>The code is valid for 14 days. Use it on the board member sign-up page.</p>`,
-      cta: { label: 'Register Now', url: '/#/signup/etarnity/board-member' },
+      cta: { label: 'Register Now', url: '/signup/etarnity/board-member' },
     }),
 
   passwordReset: (to: string, token: string) =>

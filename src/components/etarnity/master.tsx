@@ -570,7 +570,7 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
       </form>
 
       <p className="mt-2 text-[11px] text-muted-foreground">
-        The invitee registers at <span className="font-mono">/#/signup/etarnity/board-member</span> using the code. Codes are valid for 14 days.
+        The invitee registers at <span className="font-mono">/signup/etarnity/board-member</span> using the code. Codes are valid for 14 days.
       </p>
 
       <div className="mt-5 max-h-64 overflow-y-auto rounded-xl border border-border/80">

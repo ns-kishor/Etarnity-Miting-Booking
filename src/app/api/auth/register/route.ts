@@ -108,6 +108,6 @@ export async function POST(req: Request) {
   return ok({
     user: { id: user.id, email: user.email, role: user.role, name: user.name },
     memberSlug: slug,
-    redirect: '/#/dashboard',
+    redirect: '/dashboard',
   })
 }

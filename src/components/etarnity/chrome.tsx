@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { BrandMark } from './ui-bits'
 import { navigate } from '@/lib/hash-router'
 import type { Route } from '@/lib/hash-router'
@@ -11,9 +10,14 @@ export function PublicHeader({ settings, session, route }: { settings: PlatformS
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="#/" className="flex items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900" aria-label="Etarnity home">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+          aria-label="Etarnity home"
+        >
           <BrandMark logoText={settings.logoText} />
-        </Link>
+        </button>
 
         <nav className="flex items-center gap-1 sm:gap-2" aria-label="Primary">
           <button
@@ -33,15 +37,7 @@ export function PublicHeader({ settings, session, route }: { settings: PlatformS
             >
               My dashboard
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => navigate('/signup/etarnity/board-member')}
-              className="inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              Board login
-            </button>
-          )}
+          ) : null}
 
           <button
             type="button"
@@ -70,10 +66,6 @@ export function PublicFooter({ settings, route }: { settings: PlatformSettings; 
           <a href={`mailto:${settings.contactEmail}`} className="transition-colors hover:text-foreground">
             {settings.contactEmail}
           </a>
-          <span aria-hidden>·</span>
-          <Link href="/#/login-master" className="transition-colors hover:text-foreground">
-            Admin
-          </Link>
         </div>
       </div>
     </footer>

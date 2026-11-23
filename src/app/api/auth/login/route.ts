@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
   return ok({
     user: { id: user.id, email: user.email, role: user.role, name: user.name },
-    redirect: user.role === 'SUPER_ADMIN' ? '/#/master/dashboard' : '/#/dashboard',
+    redirect: user.role === 'SUPER_ADMIN' ? '/master/dashboard' : '/dashboard',
   })
 }
 
