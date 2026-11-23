@@ -1,0 +1,1195 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+# ETARNITY MEETING
+### Professional Meeting Booking & Management Platform
+
+**Company:** Etarnity Global Innovation  
+**Product:** Etarnity Meeting  
+**Version:** 1.0  
+**Date:** November 2026  
+**Product Type:** Full-Stack Web Application
+
+---
+
+# 1. PROJECT OVERVIEW
+
+## 1.1 Product Vision
+
+Develop a modern, premium, minimal and fully responsive online meeting booking platform for **Etarnity Global Innovation**.
+
+The platform will allow external visitors, potential clients, business partners, investors and other interested individuals to discover the company's board members, explore their professional expertise, check their availability and book meetings directly with their preferred board member.
+
+Additionally, each board member will have an individual dashboard to manage meeting requests, availability schedules and personal profiles.
+
+A Super Admin will have complete administrative control over the entire platform.
+
+## 1.2 Primary Objectives
+
+- Make meeting booking simple and accessible.
+- Showcase the company's board members professionally.
+- Eliminate double bookings and scheduling conflicts.
+- Give board members independent meeting management capabilities.
+- Provide centralized control through a Super Admin panel.
+- Deliver a premium user experience across all devices.
+
+## 1.3 User Roles
+
+The application will have three primary user roles:
+
+| Role | Responsibilities |
+|---|---|
+| Visitor / Client | Discover board members and book meetings |
+| Board Member | Manage bookings, schedules and profile |
+| Super Admin | Manage the entire platform |
+
+---
+
+# 2. PUBLIC WEBSITE — VISITOR EXPERIENCE
+
+## 2.1 Landing Page
+
+The landing page should be extremely minimal.
+
+**Design specifications:**
+
+- Pure white or slightly warm-white background.
+- Company branding placed subtly.
+- A single prominent centered CTA button.
+- Button text: `Let's Book a Meet`
+- Elegant typography.
+- Subtle hover interactions.
+- Smooth entrance animation.
+
+**Primary interaction:**
+
+When visitors click `Let's Book a Meet`, the landing page should smoothly transition into the Board Members section.
+
+The transition must feel natural, not like a sudden page replacement.
+
+## 2.2 Board Members Section
+
+Display all active board members in a responsive card layout.
+
+### Board Member Card Information
+
+Each card must dynamically display:
+
+1. Professional photograph.
+2. Full name.
+3. Designation / Position.
+4. Professional field.
+5. Short professional introduction.
+6. Core skills.
+7. Optional professional social links.
+
+**Example Card:**
+
+- Board Member Name
+- Creative Director & Co-Founder
+- UI/UX Design · Branding · Creative Strategy
+- Professional introduction and a brief overview of expertise.
+- Skills: UI/UX Design, Figma, Branding.
+- Availability status.
+
+### Card Interactions
+
+- Smooth hover elevation.
+- Subtle image zoom on hover.
+- Smooth border and shadow transitions.
+- Entire card should be clickable.
+- Clicking a card opens that member's booking page.
+
+### Dynamic Content
+
+All card information must come from the database.
+
+If a board member updates their profile, the public card must automatically reflect those changes.
+
+Only active and publicly visible board members should appear.
+
+---
+
+# 3. MEETING BOOKING SYSTEM
+
+This is the most important feature of the entire application.
+
+Each board member must have an individual booking page.
+
+**Suggested URL structure:**
+
+`/book/[board-member-slug]`
+
+Example:
+
+`/book/kishor-biswas`
+
+## 3.1 Booking Page Layout
+
+The booking page should use a clean three-part layout on desktop.
+
+| Section | Content |
+|---|---|
+| Left | Meeting information and meeting methods |
+| Center | Availability calendar |
+| Right | Available time slots |
+
+On smaller screens, these sections should stack vertically in a logical order.
+
+### Left Section — Meeting Information
+
+Display:
+
+- Board member's name and profile photo.
+- Designation.
+- Meeting duration.
+- Short meeting description.
+- Available meeting methods.
+- Meeting instructions.
+
+Meeting duration must be configurable by the board member.
+
+For example:
+
+- 15 Minutes
+- 30 Minutes
+- 45 Minutes
+- 60 Minutes
+
+The board member can enable or disable specific durations.
+
+## 3.2 Availability Calendar
+
+Create an interactive calendar.
+
+### Calendar Requirements
+
+- Display current month and year.
+- Previous and next month navigation.
+- Highlight available dates.
+- Disable unavailable dates.
+- Disable past dates.
+- Clearly distinguish the selected date.
+- Display availability using subtle indicators.
+- Prevent selection of dates outside the booking window.
+
+When a visitor selects a date, the available time slots for that date must appear dynamically.
+
+## 3.3 Available Time Slots
+
+Display time slots on the right side of the calendar.
+
+Example:
+
+**Monday, December 07**
+
+Available time slots:
+
+- 10:00 AM — Available
+- 11:00 AM — Time Already Booked
+- 02:00 PM — Available
+- 03:00 PM — Available
+
+### Slot Statuses
+
+Every slot must have a clear status:
+
+- Available — Selectable.
+- Pending — Temporarily unavailable while a booking request is being processed.
+- Booked — Not selectable.
+- Unavailable — Not selectable due to board member's schedule.
+
+Booked slots must display:
+
+`Time Already Booked`
+
+Do not allow visitors to select occupied time slots.
+
+### Critical Booking Logic
+
+Implement server-side booking validation.
+
+The system must:
+
+1. Fetch availability from the database.
+2. Check existing bookings.
+3. Temporarily reserve a selected slot during the booking process.
+4. Prevent simultaneous booking attempts from claiming the same slot.
+5. Revalidate availability when the visitor submits the form.
+6. Release expired temporary reservations automatically.
+
+Use database transactions or equivalent atomic locking to guarantee that two visitors cannot successfully reserve the same board member's time slot.
+
+**Important:** A pending booking request must also block the corresponding slot until it is approved, rejected or expires, according to the configured booking policy.
+
+## 3.4 Meeting Method Selection
+
+Display available meeting methods in the left section.
+
+Possible options:
+
+- Google Meet
+- Zoom
+- Microsoft Teams
+- Phone Call
+- Physical / In-person Meeting
+
+These options must be configurable by individual board members.
+
+A visitor can select only the methods enabled by the relevant board member.
+
+If a meeting method requires additional information, display the appropriate conditional fields.
+
+For example, an in-person meeting may require a preferred location.
+
+## 3.5 Booking Steps
+
+Implement a three-step booking flow.
+
+**Step 01 — Select Date & Time**
+
+**Step 02 — Complete Your Details**
+
+**Step 03 — Confirmation**
+
+The Next button should remain disabled until all required selections are completed.
+
+---
+
+# 4. BOOKING INFORMATION FORM
+
+After selecting a date, time and meeting method, visitors will proceed to a detailed information form.
+
+## 4.1 Personal Information
+
+Required fields:
+
+- Full Name
+- Email Address
+- Mobile Number
+- Country
+- City
+- Full Address
+- Organization / Company Name (optional)
+- Job Title / Profession
+
+## 4.2 Meeting Information
+
+Required fields:
+
+- Meeting Subject
+- Meeting Purpose
+- Detailed Meeting Description
+- What would you like to discuss?
+- Expected Meeting Outcome
+- Additional Notes (optional)
+
+## 4.3 Discovery Information
+
+**How did you hear about Etarnity Global Innovation?**
+
+Options:
+
+- Facebook
+- LinkedIn
+- Instagram
+- YouTube
+- Google Search
+- Friend / Referral
+- Company Website
+- Other
+
+If Other is selected, provide a text field.
+
+## 4.4 Additional Fields
+
+- Website / Portfolio URL (optional)
+- LinkedIn Profile (optional)
+- Preferred Communication Language
+- Any additional requirements
+
+## 4.5 Form Validation
+
+- Validate all required fields.
+- Validate email addresses.
+- Validate international phone number formats.
+- Prevent empty or invalid submissions.
+- Show inline validation errors.
+- Preserve previously entered data when navigating backward.
+- Add spam protection using CAPTCHA or Cloudflare Turnstile.
+- Add server-side validation.
+
+## 4.6 Final Booking Submission
+
+On submission:
+
+- Verify all information.
+- Recheck the selected time slot.
+- Save the booking request.
+- Generate a unique booking reference ID.
+- Set booking status to Pending.
+- Send an acknowledgement email.
+- Notify the relevant board member.
+
+## 4.7 Success Popup
+
+After a successful submission, display a beautiful confirmation modal.
+
+**Suggested content:**
+
+### Your Meeting Request Has Been Submitted!
+
+Thank you for your interest in connecting with Etarnity Global Innovation.
+
+Your meeting request has been successfully submitted. You will receive a confirmation email once the board member reviews your request.
+
+Display:
+
+- Booking Reference ID
+- Board Member Name
+- Meeting Date
+- Meeting Time
+- Meeting Method
+- Current Booking Status
+
+Use a subtle success animation.
+
+The popup should clearly communicate that the request is submitted, not necessarily approved.
+
+---
+
+# 5. BOARD MEMBER AUTHENTICATION
+
+## 5.1 Access URL
+
+Board member authentication must be accessible through:
+
+`/signup/etarnity/board-member`
+
+This route should open the board member authentication interface.
+
+### Authentication Requirements
+
+Implement:
+
+- Sign Up
+- Login
+- Forgot Password
+- Reset Password
+- Secure Logout
+- Session Management
+
+### Important Account Security
+
+Board member registration must not be publicly accessible without authorization.
+
+Recommended implementation:
+
+- Super Admin generates an invitation or registration token.
+- Board members register using their authorized invitation.
+- Admin approval is required before account activation if configured.
+- Every board member account must be assigned the correct role.
+- Never allow a visitor to create an account with board member privileges.
+
+After successful registration, redirect the board member to their dashboard.
+
+---
+
+# 6. BOARD MEMBER DASHBOARD
+
+Each board member should have an individual dashboard.
+
+Suggested URL:
+
+`/dashboard`
+
+The dashboard should contain four primary sections.
+
+## 6.1 Dashboard Overview
+
+Display essential statistics.
+
+**Dashboard Metrics:**
+
+- Total Meeting Requests
+- Pending Requests
+- Approved Meetings
+- Rejected Meetings
+- Completed Meetings
+- Upcoming Meetings
+
+Also include:
+
+- Upcoming meeting list.
+- Recent booking activities.
+- Weekly or monthly booking overview.
+- Quick access to schedule management.
+
+Use simple charts only where they genuinely improve understanding.
+
+Avoid unnecessary analytics and decorative elements.
+
+## 6.2 Meeting Requests
+
+This section displays all meeting requests submitted to the logged-in board member.
+
+### Request List
+
+| Information | Description |
+|---|---|
+| Client Name | Person requesting meeting |
+| Meeting Date | Requested date |
+| Meeting Time | Requested time |
+| Subject | Meeting topic |
+| Method | Selected meeting method |
+| Status | Current request status |
+| Action | View Details |
+
+### Request Details
+
+When the board member opens a request, display every piece of information submitted by the visitor.
+
+Including:
+
+- Complete personal information.
+- Contact details.
+- Professional information.
+- Meeting subject.
+- Meeting description.
+- Discovery source.
+- Selected date and time.
+- Meeting method.
+- Additional notes.
+
+### Request Actions
+
+**Approve Meeting**
+
+- Change status to Approved.
+- Confirm the booking.
+- Send an approval email.
+- Send meeting instructions or meeting link when applicable.
+- Update the calendar.
+
+**Reject Meeting**
+
+- Change status to Rejected.
+- Optionally provide a rejection reason.
+- Release the reserved time slot.
+- Notify the visitor through email.
+
+### Additional Features
+
+- Search requests.
+- Filter by status.
+- Filter by date.
+- Sort by newest or oldest.
+- View booking history.
+
+## 6.3 Schedule Management
+
+This is where each board member manages their personal meeting availability.
+
+### Availability Settings
+
+The board member must be able to:
+
+1. Set working days.
+2. Set daily available hours.
+3. Add multiple availability periods per day.
+4. Set meeting durations.
+5. Set breaks.
+6. Block specific dates.
+7. Add holidays.
+8. Set minimum advance booking time.
+9. Set maximum future booking window.
+10. Configure booking buffer time.
+11. Set timezone.
+12. Enable or disable specific meeting methods.
+
+### Example Schedule
+
+| Day | Availability |
+|---|---|
+| Monday | 10 AM – 5 PM |
+| Tuesday | 10 AM – 5 PM |
+| Wednesday | 2 PM – 6 PM |
+| Thursday | 10 AM – 5 PM |
+| Friday | 10 AM – 1 PM |
+| Saturday | Unavailable |
+| Sunday | Unavailable |
+
+All schedules must be editable.
+
+### Custom Date Availability
+
+Board members should also be able to:
+
+- Add availability on normally unavailable days.
+- Block a particular date.
+- Modify working hours for a specific date.
+- Create one-time exceptions.
+
+### Important Scheduling Logic
+
+Availability must be calculated using:
+
+`Weekly Schedule + Date Exceptions - Existing Bookings - Buffer Time`
+
+The system must never display unavailable or occupied slots as bookable.
+
+If a board member changes their schedule after meetings have already been approved, existing bookings must remain intact. The system should warn the board member before any conflicting changes.
+
+## 6.4 Profile Management
+
+Each board member can manage their own professional profile.
+
+### Editable Profile Information
+
+**Personal Details**
+
+- Full Name
+- Profile Photograph
+- Professional Email
+- Phone Number
+- Location
+
+**Professional Details**
+
+- Designation
+- Department / Professional Field
+- Short Biography
+- Professional Introduction
+- Experience
+- Core Skills
+- Specializations
+- Professional Achievements
+
+**Social Links**
+
+- LinkedIn
+- Facebook
+- Instagram
+- GitHub
+- Personal Website
+- Portfolio
+
+### Profile Visibility
+
+- Public Profile: On / Off
+- Available for Meetings: On / Off
+
+When a profile is updated, the public board member card should automatically update.
+
+Profile updates must not modify historical booking information.
+
+---
+
+# 7. SUPER ADMIN PANEL
+
+The Super Admin is the central authority of the entire platform.
+
+## 7.1 Admin Access URL
+
+`/login-master`
+
+When someone visits this route, display a dedicated Super Admin login page.
+
+Do not display this login interface on the public website.
+
+**Important:** Hiding the login URL is not security. Access must be protected by server-side authentication, role verification and authorization.
+
+## 7.2 Admin Dashboard
+
+The Super Admin should have access to:
+
+- Total Board Members
+- Total Registered Clients
+- Total Booking Requests
+- Pending Requests
+- Approved Meetings
+- Rejected Meetings
+- Completed Meetings
+- Upcoming Meetings
+
+Display platform-wide analytics and recent activities.
+
+## 7.3 Board Member Management
+
+Super Admin can:
+
+- Create board member accounts.
+- Send invitations.
+- View all board members.
+- Edit member information.
+- Activate or deactivate accounts.
+- Suspend accounts.
+- Delete accounts.
+- Reset account access.
+- Change board member permissions.
+- Control public profile visibility.
+
+## 7.4 Booking Management
+
+Super Admin can:
+
+- View all bookings.
+- View complete booking details.
+- Search bookings.
+- Filter by board member.
+- Filter by date.
+- Filter by status.
+- Approve bookings.
+- Reject bookings.
+- Cancel bookings.
+- Reschedule bookings.
+- Delete inappropriate or invalid requests.
+
+Admin actions must be logged.
+
+## 7.5 Website Content Management
+
+The Super Admin should control all public-facing content.
+
+Including:
+
+- Website branding.
+- Company name and logo.
+- Landing page content.
+- Board member display order.
+- Public member visibility.
+- Booking instructions.
+- Available meeting methods.
+- Website contact information.
+- Footer content.
+- Basic SEO settings.
+
+## 7.6 Global Settings
+
+The Super Admin should be able to configure:
+
+- Default timezone.
+- Default meeting durations.
+- Maximum booking window.
+- Minimum booking notice.
+- Email notification settings.
+- Booking approval policy.
+- CAPTCHA settings.
+- Maintenance mode.
+- Website availability.
+
+## 7.7 Admin Security
+
+Implement:
+
+- Secure admin authentication.
+- Optional two-factor authentication.
+- Role-based access control.
+- Session expiration.
+- Login attempt protection.
+- Admin activity logs.
+- Secure password reset.
+- Server-side authorization.
+
+Only authorized Super Admin accounts can access this section.
+
+---
+
+# 8. EMAIL NOTIFICATION SYSTEM
+
+The platform should provide automated email notifications.
+
+| Event | Recipient |
+|---|---|
+| New booking request | Board Member |
+| Booking request submitted | Visitor |
+| Booking approved | Visitor |
+| Booking rejected | Visitor |
+| Booking cancelled | Both parties |
+| Meeting reminder | Both parties |
+| Booking rescheduled | Both parties |
+| New board member invitation | Board Member |
+
+### Email Design
+
+Use a professional branded email template.
+
+- Etarnity Global Innovation branding.
+- Clean typography.
+- Clear subject lines.
+- Relevant booking information.
+- Responsive email layout.
+- Appropriate action buttons.
+
+Suggested email subject:
+
+`Your Meeting Request – Etarnity Global Innovation`
+
+Email delivery should be handled through a reliable email service provider.
+
+---
+
+# 9. TECHNICAL ARCHITECTURE
+
+The platform must be a real, database-driven application, not a static website or frontend-only prototype.
+
+### Recommended Technology Stack
+
+| Layer | Recommended Technology |
+|---|---|
+| Frontend | Next.js |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| UI Components | Custom reusable components |
+| Animation | Framer Motion |
+| Database | Supabase PostgreSQL |
+| Authentication | Supabase Auth |
+| Backend | Next.js Server Actions / API Routes |
+| Image Storage | Supabase Storage |
+| Email | Resend |
+| Spam Protection | Cloudflare Turnstile |
+| Deployment | Vercel |
+| Version Control | GitHub |
+
+The implementation may use equivalent technologies if there is a strong technical reason, but all functional requirements must be preserved.
+
+## 9.1 Database Structure
+
+Recommended primary database tables:
+
+| Table | Purpose |
+|---|---|
+| users | Authentication and account roles |
+| board_members | Professional profiles |
+| bookings | Meeting booking records |
+| availability_rules | Weekly schedules |
+| availability_exceptions | Custom dates and blocked periods |
+| meeting_methods | Supported meeting methods |
+| booking_holds | Temporary slot reservations |
+| notifications | In-app notifications |
+| admin_logs | Administrative activity records |
+| platform_settings | Global website configuration |
+
+### Database Requirements
+
+- Use proper foreign key relationships.
+- Use database indexes for booking queries.
+- Validate data on the server.
+- Maintain timestamps.
+- Store booking history.
+- Implement Row Level Security (RLS).
+- Prevent unauthorized data access.
+
+### Booking Status Lifecycle
+
+**Booking Submitted → Pending → Approved / Rejected**
+
+An approved booking can subsequently become Completed.
+
+Additional statuses may include Cancelled, Rescheduled and Expired.
+
+All status transitions must be validated on the server.
+
+---
+
+# 10. UI/UX DESIGN SYSTEM
+
+This is a particularly important part of the project.
+
+The platform must feel like a premium international SaaS product, not a generic booking template.
+
+## 10.1 Visual Direction
+
+### Minimal. Elegant. Professional.
+
+### Design Principles
+
+1. Minimalism over decoration.
+2. Clear information hierarchy.
+3. Consistent spacing.
+4. Excellent typography.
+5. Subtle interactive feedback.
+6. Consistent component design.
+7. Functional animation.
+8. Accessibility-first design.
+
+### Suggested Color Palette
+
+| Color | Hex |
+|---|---|
+| White | #FFFFFF |
+| Surface | #F7F8FA |
+| Border | #E5E7EB |
+| Text | #272B33 |
+| Primary | #18181B |
+
+Use a subtle, consistent accent color only where it improves hierarchy or interaction.
+
+### Typography
+
+Recommended fonts:
+
+- Inter
+- Geist
+- Manrope
+
+Use a consistent type scale with appropriate line heights.
+
+### Components
+
+Create reusable components for:
+
+- Buttons
+- Input Fields
+- Select Menus
+- Cards
+- Dialogs
+- Modals
+- Calendar
+- Time Slots
+- Navigation
+- Tables
+- Status Indicators
+- Toast Notifications
+- Dropdown Menus
+
+## 10.2 Animation Guidelines
+
+Use Framer Motion for purposeful, smooth transitions.
+
+Required animations:
+
+| Element | Animation |
+|---|---|
+| Landing Page | Subtle fade and scale |
+| CTA Button | Smooth hover interaction |
+| Member Cards | Staggered entrance |
+| Card Hover | Slight elevation |
+| Page Transition | Fade / slide |
+| Calendar | Smooth month transition |
+| Time Slots | Staggered appearance |
+| Booking Form | Smooth step transition |
+| Success Popup | Scale and fade |
+| Dashboard | Subtle content entrance |
+| Sidebar | Smooth navigation state |
+
+### Animation Restrictions
+
+- Avoid excessive bouncing.
+- Avoid unnecessary 3D animations.
+- Avoid continuous decorative animations.
+- Avoid slow transitions that delay user interaction.
+- Avoid layout shifts.
+- Respect `prefers-reduced-motion`.
+
+The application should feel fast even when animations are enabled.
+
+---
+
+# 11. FULLY RESPONSIVE DESIGN
+
+**Mandatory Requirement**
+
+The website must work perfectly across all screen sizes.
+
+### Responsive Requirements
+
+- No horizontal overflow.
+- No overlapping components.
+- No clipped text.
+- No broken card layouts.
+- Touch-friendly buttons.
+- Properly scaled typography.
+- Adaptive navigation.
+- Mobile-friendly calendar.
+- Mobile-friendly forms.
+- Responsive tables or card-based alternatives.
+
+Test at minimum:
+
+- 320px
+- 375px
+- 390px
+- 430px
+- 768px
+- 1024px
+- 1280px
+- 1440px
+- 1920px
+
+Responsive behavior must be implemented throughout the application, not just the landing page.
+
+---
+
+# 12. SECURITY & PRIVACY
+
+Implement production-grade security practices.
+
+### Security Requirements
+
+- HTTPS.
+- Secure authentication.
+- Role-based authorization.
+- Database Row Level Security.
+- Server-side input validation.
+- Protection against SQL injection.
+- XSS protection.
+- CSRF protection where applicable.
+- Rate limiting.
+- CAPTCHA / Turnstile.
+- Secure session management.
+- Secure file upload validation.
+- Environment variable protection.
+- No exposure of secret API keys.
+- Protection against unauthorized booking access.
+
+### Privacy Requirements
+
+- Collect only necessary visitor information.
+- Restrict personal data visibility to authorized users.
+- Board members can only access their own booking information.
+- Super Admin can access platform-wide data.
+- Visitors should receive a clear privacy notice.
+- Implement a reasonable data retention and deletion policy.
+
+---
+
+# 13. PERFORMANCE & SEO
+
+## Performance
+
+Target the following Core Web Vitals:
+
+| Metric | Target |
+|---|---|
+| LCP | ≤ 2.5 seconds |
+| INP | ≤ 200 ms |
+| CLS | ≤ 0.1 |
+
+Additional requirements:
+
+- Optimized images.
+- Lazy loading.
+- Code splitting.
+- Efficient database queries.
+- Minimal unnecessary JavaScript.
+- Proper caching.
+- Fast page navigation.
+- Avoid unnecessary third-party scripts.
+
+## SEO
+
+- Unique page titles.
+- Meta descriptions.
+- Open Graph metadata.
+- Sitemap.
+- Robots.txt.
+- Canonical URLs.
+- Semantic HTML.
+- Descriptive image alt text.
+- Organization structured data where appropriate.
+
+Private dashboards and authentication pages must not be indexed.
+
+---
+
+# 14. SUGGESTED WEBSITE ROUTES
+
+The following URL structure should be used.
+
+| Route | Purpose |
+|---|---|
+| `/` | Public landing page |
+| `/book` | Board member directory |
+| `/book/[slug]` | Individual booking page |
+| `/booking/success` | Booking confirmation |
+| `/signup/etarnity/board-member` | Board member registration/login |
+| `/dashboard` | Board member dashboard |
+| `/dashboard/requests` | Meeting requests |
+| `/dashboard/schedule` | Schedule management |
+| `/dashboard/profile` | Profile management |
+| `/login-master` | Super Admin login |
+| `/master/dashboard` | Admin dashboard |
+| `/master/board-members` | Board member management |
+| `/master/bookings` | All bookings |
+| `/master/settings` | Platform configuration |
+
+Additional routes can be introduced when required.
+
+All private routes must enforce authentication and authorization.
+
+---
+
+# 15. USER JOURNEY
+
+## Visitor Journey
+
+1. Visit the website.
+2. Click Let's Book a Meet.
+3. Explore board members.
+4. Select a board member.
+5. Choose meeting duration.
+6. Select an available date.
+7. Select an available time.
+8. Choose meeting method.
+9. Complete personal information form.
+10. Submit booking request.
+11. Receive confirmation and booking reference.
+12. Receive approval or rejection notification.
+
+## Board Member Journey
+
+1. Visit board member signup route.
+2. Register / Log in.
+3. Complete professional profile.
+4. Configure meeting schedule.
+5. Receive meeting requests.
+6. Review client information.
+7. Approve or reject requests.
+8. Manage upcoming meetings.
+
+## Super Admin Journey
+
+1. Visit `/login-master`.
+2. Authenticate securely.
+3. Access Super Admin dashboard.
+4. Manage board members.
+5. Monitor platform bookings.
+6. Manage website content.
+7. Configure global settings.
+8. Monitor platform activity.
+
+---
+
+# 16. ACCEPTANCE CRITERIA
+
+The application will be considered complete only when all the following requirements are satisfied.
+
+- [ ] Public landing page works correctly.
+- [ ] CTA opens the board member directory.
+- [ ] Board member cards display database information.
+- [ ] Every board member has an individual booking page.
+- [ ] Availability calendar works dynamically.
+- [ ] Unavailable dates cannot be selected.
+- [ ] Booked time slots cannot be selected.
+- [ ] Simultaneous booking conflicts are prevented.
+- [ ] Booking forms validate correctly.
+- [ ] Booking submissions are saved in the database.
+- [ ] Unique booking references are generated.
+- [ ] Success confirmation works.
+- [ ] Board member authentication works.
+- [ ] Unauthorized registration is prevented.
+- [ ] Board member dashboard works.
+- [ ] Board members can approve and reject requests.
+- [ ] Schedule customization works.
+- [ ] Profile updates reflect on public cards.
+- [ ] Super Admin authentication works.
+- [ ] Super Admin has complete authorized control.
+- [ ] Email notifications work.
+- [ ] Database security policies are tested.
+- [ ] All responsive breakpoints work.
+- [ ] No critical bugs or console errors remain.
+- [ ] Application is deployable to production.
+
+---
+
+# 17. DEVELOPMENT STRATEGY
+
+Build the application in the following order to avoid architectural mistakes.
+
+| Phase | Development Focus |
+|---|---|
+| Phase 01 | Project setup, design system, database architecture |
+| Phase 02 | Public landing page and board member directory |
+| Phase 03 | Board member authentication and profile management |
+| Phase 04 | Scheduling engine and availability calendar |
+| Phase 05 | Complete visitor booking workflow |
+| Phase 06 | Board member dashboard |
+| Phase 07 | Super Admin panel |
+| Phase 08 | Email notifications and integrations |
+| Phase 09 | Security, performance and responsive testing |
+| Phase 10 | Production deployment |
+
+**Development rule:** Do not build the entire application as one large component. Use modular architecture, reusable components, maintainable code and clearly separated business logic.
+
+---
+
+# 18. FINAL INSTRUCTIONS FOR AI CODING AGENT
+
+Treat this PRD as the primary source of truth for the entire project.
+
+Build a complete, production-ready, full-stack meeting booking platform for Etarnity Global Innovation.
+
+### Non-negotiable requirements:
+
+1. Do not create a static UI-only prototype.
+2. Implement real authentication and database integration.
+3. All board member information must be dynamic.
+4. Implement real availability calculations.
+5. Prevent double booking at the database level.
+6. Implement all three user roles with proper authorization.
+7. Every dashboard action must be functional.
+8. Use clean, reusable and maintainable architecture.
+9. Follow the defined minimal design direction.
+10. Ensure complete responsiveness across all supported screen sizes.
+
+Do not use fake data in production functionality. Seed data may be used for development and testing, but clearly separate it from real production records.
+
+Do not leave non-functional buttons, placeholder pages, fake analytics or incomplete interactions.
+
+Before completing development, test all critical user journeys and security boundaries.
+
+If a technical requirement is ambiguous, choose the safest and most maintainable implementation without compromising the product vision.
+
+---
+
+# 19. ADDITIONAL PRODUCT RECOMMENDATIONS
+
+The following features are recommended additions to make the platform more practical and professional.
+
+| Feature | Priority | Reason |
+|---|---|---|
+| Booking Cancellation | High | Visitor নিজের বুকিং বাতিল করতে পারবে |
+| Booking Rescheduling | High | সময় পরিবর্তনের সুবিধা |
+| Automatic Email Reminders | High | মিটিং মিস হওয়ার সম্ভাবনা কমবে |
+| Google Calendar Integration | Medium | Personal calendar-এ meeting sync |
+| Meeting Link Management | High | Approved meeting-এর link সংরক্ষণ |
+| Booking Reference Tracking | Medium | Reference ID দিয়ে booking status দেখা |
+| Custom Booking Questions | Medium | Board member অতিরিক্ত প্রশ্ন যোগ করতে পারবে |
+| Admin Activity Logs | High | গুরুত্বপূর্ণ admin action ট্র্যাক করা |
+
+**Special Recommendation:** Booking Cancellation, Rescheduling এবং Automatic Email Reminders শুরু থেকেই রাখবে। এগুলো ছাড়া বাস্তব meeting management কিছুটা অসম্পূর্ণ থেকে যাবে।
+
+---
+
+# 20. FINAL PRODUCT DEFINITION
+
+## ETARNITY MEETING
+
+### Connect. Schedule. Collaborate.
+
+A centralized meeting booking and management platform that connects people with the right professionals at Etarnity Global Innovation.
+
+**Core Product Specifications:**
+
+- 03 User Roles
+- 04 Core Board Member Dashboard Sections
+- 10+ Major Feature Modules
+- 100% Responsive Design Target
+
+### Final Product Philosophy
+
+The most important three parts of this project are:
+
+1. Scheduling Engine.
+2. Booking Conflict Prevention.
+3. Role-Based Dashboard Architecture.
+
+No matter how beautiful the UI looks, the platform will not be successful in real-world use unless these three components work accurately.
+
+Therefore, the recommended development approach is to build the Design System and Database Architecture first, followed by the Booking Engine.
+
+**END OF PRODUCT REQUIREMENTS DOCUMENT**
+
+**Product:** Etarnity Meeting  
+**Organization:** Etarnity Global Innovation  
+**Version:** 1.0
