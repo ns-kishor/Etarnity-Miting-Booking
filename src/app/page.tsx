@@ -18,6 +18,25 @@ import MasterView from '@/components/etarnity/master'
 import { Loading } from '@/components/etarnity/ui-bits'
 import { Wrench } from 'lucide-react'
 
+const DEFAULT_SETTINGS: PlatformSettings = {
+  companyName: 'Etarnity Global Innovation',
+  logoText: 'ETARNITY',
+  tagline: 'Connect. Schedule. Collaborate.',
+  landingHeadline: "Meet with Etarnity's Board of Directors",
+  landingSubtext: 'Direct access to senior leadership. Select a board member, explore available times, and request a meeting in minutes.',
+  bookingInstructions: 'Select an available time slot and provide your details to request a meeting.',
+  contactEmail: 'contact@etarnity.com',
+  footerText: '© 2026 Etarnity Global Innovation. All rights reserved.',
+  seoTitle: 'Etarnity Meeting — Book a Meeting',
+  seoDescription: 'Book a meeting with Etarnity Global Innovation board members.',
+  defaultTimezone: 'Asia/Dhaka',
+  defaultDurations: '15,30,45,60',
+  maxBookingWindowDays: 30,
+  minBookingNoticeHours: 4,
+  approvalMode: 'MANUAL',
+  maintenanceMode: false,
+}
+
 export default function Home() {
   const [route] = useHashRoute()
   const [settings, setSettings] = useState<PlatformSettings | null>(null)
@@ -32,14 +51,21 @@ export default function Home() {
     ])
       .then(([s, sess]) => {
         if (!alive) return
-        setSettings(s.settings)
+        setSettings(s.settings || DEFAULT_SETTINGS)
         setSession(sess)
       })
-      .catch(() => {
-        if (alive) setBooted(true)
+      .catch((err) => {
+        console.error('Initial load error:', err)
+        if (alive) {
+          setSettings((prev) => prev ?? DEFAULT_SETTINGS)
+          setBooted(true)
+        }
       })
       .finally(() => {
-        if (alive) setBooted(true)
+        if (alive) {
+          setSettings((prev) => prev ?? DEFAULT_SETTINGS)
+          setBooted(true)
+        }
       })
     return () => {
       alive = false
