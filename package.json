@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "prisma generate && next build",
+    "build": "node scripts/prepare-db.js && prisma generate && next build",
     "start": "next start -p 3000",
-    "postinstall": "prisma generate",
+    "postinstall": "node scripts/prepare-db.js && prisma generate",
     "lint": "eslint .",
-    "db:push": "prisma db push --accept-data-loss",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:push": "node scripts/prepare-db.js && prisma db push --accept-data-loss",
+    "db:generate": "node scripts/prepare-db.js && prisma generate",
+    "db:migrate": "node scripts/prepare-db.js && prisma migrate dev",
+    "db:reset": "node scripts/prepare-db.js && prisma migrate reset"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

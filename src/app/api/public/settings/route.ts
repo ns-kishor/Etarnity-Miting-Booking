@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
 import { ok } from '@/lib/api'
+import { ensureSeeded } from '@/lib/auto-seed'
 
 const DEFAULT_SETTINGS = {
   id: 'singleton',
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS = {
 }
 
 export async function GET() {
+  await ensureSeeded().catch(() => null)
   try {
     const settings = await db.platformSetting.findUnique({ where: { id: 'singleton' } })
     const publicMemberCount = await db.boardMember.count({ where: { isPublic: true, isActive: true } }).catch(() => 0)

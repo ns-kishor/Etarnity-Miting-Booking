@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs'
 
 function getDatabaseUrl(): string {
-  const envUrl = process.env.DATABASE_URL
+  const envUrl = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL
   if (envUrl && !envUrl.startsWith('file:')) {
     return envUrl
   }
