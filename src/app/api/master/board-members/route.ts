@@ -87,12 +87,21 @@ export async function POST(req: Request) {
           meetingMethods: JSON.stringify(ALL_METHODS.map((m) => ({ type: m.type, enabled: m.type === 'GOOGLE_MEET' }))),
           displayOrder: (maxOrder._max.displayOrder ?? -1) + 1,
           isPublic: body.isPublic ?? true,
-          isAvailable: false,
+          isAvailable: true,
+          isActive: true,
         },
       },
     },
     include: { boardMember: true },
   })
+
+  if (user.boardMember) {
+    const defaultRules = [1, 2, 3, 4, 5].flatMap((day) => [
+      { boardMemberId: user.boardMember!.id, dayOfWeek: day, startTime: '10:00', endTime: '13:00', isBreak: false },
+      { boardMemberId: user.boardMember!.id, dayOfWeek: day, startTime: '14:00', endTime: '17:00', isBreak: false },
+    ])
+    await db.availabilityRule.createMany({ data: defaultRules })
+  }
 
   await logAdmin(session.email, 'BOARD_MEMBER_CREATED', `Created board member ${slug} (${email})`)
   return ok({ member: user.boardMember }, 201)

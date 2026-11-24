@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     const u = await tx.user.create({
       data: { email, passwordHash, role: 'BOARD_MEMBER', name: body.fullName.trim() },
     })
-    await tx.boardMember.create({
+    const member = await tx.boardMember.create({
       data: {
         userId: u.id,
         slug,
@@ -95,10 +95,19 @@ export async function POST(req: Request) {
         ]),
         meetingDescription: 'A meeting with our new board member.',
         displayOrder: 99,
-        isPublic: false, // hidden until the member completes their profile
-        isAvailable: false,
+        isPublic: true,
+        isAvailable: true,
+        isActive: true,
       },
     })
+
+    // Default working hours: Mon-Fri 10:00 - 17:00
+    const defaultRules = [1, 2, 3, 4, 5].flatMap((day) => [
+      { boardMemberId: member.id, dayOfWeek: day, startTime: '10:00', endTime: '13:00', isBreak: false },
+      { boardMemberId: member.id, dayOfWeek: day, startTime: '14:00', endTime: '17:00', isBreak: false },
+    ])
+    await tx.availabilityRule.createMany({ data: defaultRules })
+
     await tx.invitation.update({ where: { id: invitation.id }, data: { usedAt: new Date() } })
     return u
   })

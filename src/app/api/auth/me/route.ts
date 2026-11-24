@@ -9,7 +9,13 @@ export async function GET() {
 
   let member: { id: string; slug: string; name: string; isPublic: boolean; isAvailable: boolean } | null = null
   if (session.role === 'BOARD_MEMBER') {
-    const bm = await db.boardMember.findUnique({ where: { userId: session.userId } })
+    let bm = await db.boardMember.findUnique({ where: { userId: session.userId } })
+    if (!bm && session.email) {
+      bm = await db.boardMember.findFirst({ where: { email: session.email } })
+      if (bm && !bm.userId) {
+        await db.boardMember.update({ where: { id: bm.id }, data: { userId: session.userId } }).catch(() => null)
+      }
+    }
     if (bm) {
       member = {
         id: bm.id,

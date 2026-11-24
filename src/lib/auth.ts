@@ -55,10 +55,11 @@ export async function setSessionCookie(payload: SessionPayload) {
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' && process.env.VERCEL === '1',
     maxAge: SESSION_DAYS * 24 * 60 * 60,
     path: '/',
   })
+  return token
 }
 
 export async function clearSessionCookie() {
@@ -91,7 +92,13 @@ export async function getSessionUser(): Promise<(SessionPayload & { isActive: bo
 export async function requireBoardMember() {
   const session = await getSessionUser()
   if (!session || session.role !== 'BOARD_MEMBER') return null
-  const member = await db.boardMember.findUnique({ where: { userId: session.userId } })
+  let member = await db.boardMember.findUnique({ where: { userId: session.userId } })
+  if (!member && session.email) {
+    member = await db.boardMember.findFirst({ where: { email: session.email } })
+    if (member && !member.userId) {
+      await db.boardMember.update({ where: { id: member.id }, data: { userId: session.userId } }).catch(() => null)
+    }
+  }
   if (!member) return null
   return { session, member }
 }

@@ -23,6 +23,7 @@ export async function api<T = unknown>(
     body: options?.body !== undefined ? JSON.stringify(options.body) : undefined,
     signal: options?.signal,
     cache: 'no-store',
+    credentials: 'include',
   })
 
   let data: Record<string, unknown> = {}

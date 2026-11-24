@@ -72,6 +72,12 @@ export default function Home() {
     }
   }, [])
 
+  const refreshSession = () => {
+    api<SessionInfo>('/api/auth/me')
+      .then((sess) => setSession(sess))
+      .catch(() => setSession(null))
+  }
+
   const isMasterRoute = route.view === 'master' || route.view === 'master-login'
   const isDashboardRoute = route.view === 'dashboard'
   const isPublicRoute = !isMasterRoute && !isDashboardRoute
@@ -121,7 +127,7 @@ export default function Home() {
           {route.view === 'booking' ? <BookingView settings={settings} slug={route.slug} /> : null}
           {route.view === 'booking-success' ? <BookingSuccessView settings={settings} reference={route.ref} /> : null}
           {route.view === 'track' ? <TrackView settings={settings} /> : null}
-          {route.view === 'auth' ? <AuthView settings={settings} initialMode={route.mode} onSession={() => setSession(null)} /> : null}
+          {route.view === 'auth' ? <AuthView settings={settings} initialMode={route.mode} onSession={refreshSession} /> : null}
           {route.view === 'dashboard' ? <DashboardView settings={settings} session={session} onSessionChange={setSession} section={route.section} /> : null}
           {route.view === 'master-login' ? <MasterLoginView settings={settings} /> : null}
           {route.view === 'master' ? <MasterView settings={settings} section={route.section} onSessionChange={setSession} /> : null}

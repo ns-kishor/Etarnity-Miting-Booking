@@ -57,7 +57,9 @@ export default function DashboardView({
       .then((d) => {
         if (!alive) return
         onSessionChange(d)
-        if (d.user?.role !== 'BOARD_MEMBER' || !d.member) {
+        if (d.user?.role === 'SUPER_ADMIN') {
+          navigate('/master/dashboard', true)
+        } else if (d.user?.role !== 'BOARD_MEMBER' || !d.member) {
           navigate('/signup/etarnity/board-member', true)
         } else {
           setMember(d.member)

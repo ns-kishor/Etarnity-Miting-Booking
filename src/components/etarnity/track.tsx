@@ -32,7 +32,11 @@ type TrackedBooking = {
  */
 export default function TrackView({ settings }: { settings: PlatformSettings }) {
   const [route] = useHashRoute()
-  const initialRef = route.view === 'track' ? new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('ref') ?? '' : ''
+  const initialRef =
+    typeof window !== 'undefined' && route.view === 'track'
+      ? (new URLSearchParams(window.location.search).get('ref') ||
+         new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('ref') || '')
+      : ''
 
   const [reference, setReference] = useState(initialRef)
   const [booking, setBooking] = useState<TrackedBooking | null>(null)

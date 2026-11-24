@@ -48,7 +48,7 @@ export default function AuthView({ settings, initialMode, onSession }: { setting
         className="rounded-3xl border border-border/80 bg-white p-7 shadow-[0_20px_50px_-24px_rgba(24,24,27,0.2)] sm:p-9"
       >
         {mode === 'login' ? <LoginForm settings={settings} switchMode={switchMode} onSession={onSession} /> : null}
-        {mode === 'signup' ? <SignupForm switchMode={switchMode} /> : null}
+        {mode === 'signup' ? <SignupForm switchMode={switchMode} onSession={onSession} /> : null}
         {mode === 'forgot' ? <ForgotForm switchMode={switchMode} /> : null}
         {mode === 'reset' ? <ResetForm switchMode={switchMode} /> : null}
       </motion.div>
@@ -132,7 +132,7 @@ function LoginForm({ settings, switchMode, onSession }: { settings: PlatformSett
 
 /* -------------------------------- Signup -------------------------------- */
 
-function SignupForm({ switchMode }: { switchMode: (m: Mode) => void }) {
+function SignupForm({ switchMode, onSession }: { switchMode: (m: Mode) => void; onSession?: () => void }) {
   const [form, setForm] = useState({ invitationToken: '', fullName: '', email: '', password: '', confirmPassword: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
@@ -149,6 +149,7 @@ function SignupForm({ switchMode }: { switchMode: (m: Mode) => void }) {
     try {
       const d = await api<{ redirect: string }>('/api/auth/register', { method: 'POST', body: form })
       toast.success('Account created. Welcome to the board!')
+      onSession?.()
       navigate(d.redirect.replace('/#', ''))
     } catch (err) {
       const e2 = err as ApiError
