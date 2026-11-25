@@ -48,7 +48,11 @@ export function MemberAvatar({
   if (photoUrl) {
     return (
       <span className={cn('relative block overflow-hidden rounded-full bg-muted', className)}>
-        <Image src={photoUrl} alt={`${name} portrait`} fill sizes={sizes ?? '96px'} className="object-cover" />
+        {photoUrl.startsWith('data:') ? (
+          <img src={photoUrl} alt={`${name} portrait`} className="h-full w-full object-cover object-top" />
+        ) : (
+          <Image src={photoUrl} alt={`${name} portrait`} fill sizes={sizes ?? '96px'} className="object-cover object-top" />
+        )}
       </span>
     )
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { api, ApiError } from '@/lib/api-client'
 import { navigate } from '@/lib/hash-router'
@@ -9,7 +9,7 @@ import { MEETING_METHODS, methodLabel } from './types'
 import { SectionHeading, EmptyState, Loading, FieldError } from './ui-bits'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Plus, Trash2, CalendarOff, CalendarPlus, Save, TriangleAlert, Globe2, TimerReset, CalendarRange, ShieldCheck, UserRound } from 'lucide-react'
+import { Plus, Trash2, CalendarOff, CalendarPlus, Save, TriangleAlert, Globe2, TimerReset, CalendarRange, ShieldCheck, UserRound, Upload, Camera, Link as LinkIcon, Image as ImageIcon } from 'lucide-react'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const TIMEZONES = ['Asia/Dhaka', 'Asia/Kolkata', 'Asia/Dubai', 'Asia/Singapore', 'Asia/Tokyo', 'Europe/London', 'Europe/Berlin', 'Europe/Madrid', 'America/New_York', 'America/Chicago', 'America/Los_Angeles', 'Australia/Sydney', 'Africa/Lagos', 'UTC']
@@ -437,12 +437,102 @@ export function ProfileSection() {
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [previewUrl, setPreviewUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [showUrlInput, setShowUrlInput] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     api<{ profile: Profile }>('/api/dashboard/profile')
       .then((d) => { setProfile(d.profile); setPreviewUrl(d.profile.photoUrl) })
       .catch((e) => toast.error((e as ApiError).message))
   }, [])
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('photo', file)
+
+      const res = await fetch('/api/dashboard/profile/photo', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to upload photograph.')
+      }
+
+      setPreviewUrl(data.photoUrl)
+      upd('photoUrl', data.photoUrl)
+      toast.success('Profile photo updated successfully!')
+    } catch (err: any) {
+      console.warn('Server photo upload error, using local fallback:', err)
+      // Client-side fallback if server Sharp call fails
+      try {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          const rawResult = event.target?.result as string
+          if (rawResult) {
+            const img = new window.Image()
+            img.onload = () => {
+              const canvas = document.createElement('canvas')
+              const maxDim = 800
+              let width = img.width
+              let height = img.height
+              if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                  height = Math.round((height * maxDim) / width)
+                  width = maxDim
+                } else {
+                  width = Math.round((width * maxDim) / height)
+                  height = maxDim
+                }
+              }
+              canvas.width = width
+              canvas.height = height
+              const ctx = canvas.getContext('2d')
+              ctx?.drawImage(img, 0, 0, width, height)
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.88)
+              setPreviewUrl(dataUrl)
+              upd('photoUrl', dataUrl)
+              toast.success('Photo processed from device! Click Save to apply.')
+            }
+            img.onerror = () => {
+              setPreviewUrl(rawResult)
+              upd('photoUrl', rawResult)
+              toast.success('Photo selected! Click Save to apply.')
+            }
+            img.src = rawResult
+          }
+        }
+        reader.readAsDataURL(file)
+      } catch {
+        toast.error(err.message || 'Failed to process image file.')
+      }
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setPreviewUrl('')
+    upd('photoUrl', '')
+    try {
+      await fetch('/api/dashboard/profile/photo', {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      toast.success('Profile photograph removed.')
+    } catch {
+      // already removed in state
+    }
+  }
 
   async function save() {
     if (!profile) return
@@ -527,20 +617,98 @@ export function ProfileSection() {
             <label className="mb-1.5 block text-xs font-semibold">Location</label>
             <input type="text" value={profile.location ?? ''} onChange={(e) => upd('location', e.target.value)} className={inputCls} placeholder="City, Country" />
           </div>
+
+          {/* Device Photo Upload & Preview */}
           <div className="sm:col-span-2">
-            <label className="mb-1.5 block text-xs font-semibold">Profile photograph URL</label>
-            <div className="flex items-start gap-3">
-              <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary">
-                {previewUrl ? (
-                   
-                  <img src={previewUrl} alt="Profile preview" className="h-full w-full object-cover object-top" />
-                ) : (
-                  <UserRound className="h-6 w-6 text-muted-foreground" />
-                )}
-              </span>
-              <div className="flex-1">
-                <input type="url" value={profile.photoUrl} onChange={(e) => { upd('photoUrl', e.target.value); setPreviewUrl(e.target.value) }} className={inputCls} placeholder="https://… or /members/name.png" />
-                <p className="mt-1 text-[11px] text-muted-foreground">Paste an image URL. Square or portrait images work best.</p>
+            <label className="mb-1.5 block text-xs font-semibold">Profile photograph</label>
+            <div className="rounded-2xl border border-border bg-surface/50 p-4 transition-colors hover:border-zinc-400">
+              <div className="flex flex-col sm:flex-row items-center gap-5">
+                {/* Avatar preview */}
+                <div className="relative group shrink-0">
+                  <span className="flex h-20 w-20 overflow-hidden rounded-full border-2 border-border bg-secondary shadow-sm">
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Profile preview" className="h-full w-full object-cover object-top" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-lg font-bold text-white">
+                        {profile.name.split(' ').map((w) => w[0]).join('') || <UserRound className="h-6 w-6 text-muted-foreground" />}
+                      </div>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    title="Click to choose a photo"
+                    className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity text-white text-[10px] font-semibold"
+                  >
+                    <Camera className="h-5 w-5 mb-0.5" />
+                    <span>Upload</span>
+                  </button>
+                </div>
+
+                {/* Upload controls */}
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,.heic,.heif,.avif,.webp,.png,.jpg,.jpeg,.gif,.svg,.bmp,.tiff"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <button
+                      type="button"
+                      disabled={uploading}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      {uploading ? 'Processing photo…' : 'Upload photo from device'}
+                    </button>
+
+                    {previewUrl ? (
+                      <button
+                        type="button"
+                        disabled={uploading}
+                        onClick={handleRemovePhoto}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100 hover:border-red-300 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Remove
+                      </button>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowUrlInput((v) => !v)}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground underline underline-offset-2 px-1"
+                    >
+                      <LinkIcon className="h-3 w-3" />
+                      {showUrlInput ? 'Hide URL link' : 'Or enter image link'}
+                    </button>
+                  </div>
+
+                  <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                    Upload directly from your phone, tablet, or computer. All formats supported (<strong>PNG, JPG, WebP, HEIC/iPhone, AVIF, SVG</strong>). Automatically resized and optimized.
+                  </p>
+
+                  {showUrlInput ? (
+                    <div className="mt-3">
+                      <input
+                        type="url"
+                        value={profile.photoUrl.startsWith('data:') ? '' : profile.photoUrl}
+                        onChange={(e) => {
+                          upd('photoUrl', e.target.value)
+                          setPreviewUrl(e.target.value)
+                        }}
+                        className={inputCls}
+                        placeholder="https://example.com/avatar.jpg"
+                      />
+                      <p className="mt-1 text-[10px] text-muted-foreground">Paste a direct image URL.</p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>

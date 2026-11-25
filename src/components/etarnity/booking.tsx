@@ -488,7 +488,11 @@ function Step1(props: {
           <div className="flex items-center gap-3">
             {member.photoUrl ? (
               <span className="relative block h-14 w-14 overflow-hidden rounded-full bg-secondary">
-                <Image src={member.photoUrl} alt={`${member.name} portrait`} fill sizes="56px" className="object-cover object-top" />
+                {member.photoUrl.startsWith('data:') ? (
+                  <img src={member.photoUrl} alt={`${member.name} portrait`} className="h-full w-full object-cover object-top" />
+                ) : (
+                  <Image src={member.photoUrl} alt={`${member.name} portrait`} fill sizes="56px" className="object-cover object-top" />
+                )}
               </span>
             ) : (
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-base font-bold text-white">
@@ -866,7 +870,11 @@ function Step2(props: {
           <div className="mt-3 flex items-center gap-3 border-b border-border/60 pb-3">
             {props.member.photoUrl ? (
               <span className="relative block h-10 w-10 overflow-hidden rounded-full bg-secondary">
-                <Image src={props.member.photoUrl} alt={props.member.name} fill sizes="40px" className="object-cover object-top" />
+                {props.member.photoUrl.startsWith('data:') ? (
+                  <img src={props.member.photoUrl} alt={props.member.name} className="h-full w-full object-cover object-top" />
+                ) : (
+                  <Image src={props.member.photoUrl} alt={props.member.name} fill sizes="40px" className="object-cover object-top" />
+                )}
               </span>
             ) : null}
             <div className="min-w-0">

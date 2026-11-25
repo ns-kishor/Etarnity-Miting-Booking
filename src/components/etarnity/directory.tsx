@@ -52,14 +52,22 @@ export function MemberCard({ member, index }: { member: PublicMember; index: num
       {/* photo */}
       <div className="relative aspect-[4/3.4] w-full overflow-hidden bg-secondary">
         {member.photoUrl ? (
-          <Image
-            src={member.photoUrl}
-            alt={`${member.name} — ${member.designation}`}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            priority={index < 3}
-            className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.045]"
-          />
+          member.photoUrl.startsWith('data:') ? (
+            <img
+              src={member.photoUrl}
+              alt={`${member.name} — ${member.designation}`}
+              className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.045]"
+            />
+          ) : (
+            <Image
+              src={member.photoUrl}
+              alt={`${member.name} — ${member.designation}`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={index < 3}
+              className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.045]"
+            />
+          )
         ) : (
           <div className="flex h-full items-center justify-center text-5xl font-bold text-zinc-300">
             {member.name.split(' ').map((w) => w[0]).join('')}
