@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   outputFileTracingIncludes: {
     '/**': ['./db/**/*', './prisma/**/*'],
+    '/*': ['./db/**/*', './prisma/**/*'],
+    '/api/**/*': ['./db/**/*', './prisma/**/*'],
   },
 };
 

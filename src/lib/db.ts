@@ -2,6 +2,27 @@ import { PrismaClient } from '@prisma/client'
 import path from 'path'
 import fs from 'fs'
 
+function findSourceDb(): string | null {
+  const candidates = [
+    path.join(process.cwd(), 'db', 'custom.db'),
+    path.join(process.cwd(), '.next', 'server', 'db', 'custom.db'),
+    path.resolve(process.cwd(), 'db', 'custom.db'),
+    path.resolve('db/custom.db'),
+    path.join(__dirname, '..', '..', '..', 'db', 'custom.db'),
+    path.join(__dirname, '..', '..', 'db', 'custom.db'),
+    path.join(__dirname, '..', 'db', 'custom.db'),
+    path.join(__dirname, 'db', 'custom.db'),
+  ]
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(/*turbopackIgnore: true*/ c) && fs.statSync(/*turbopackIgnore: true*/ c).size > 1000) {
+        return c
+      }
+    } catch {}
+  }
+  return null
+}
+
 function getDatabaseUrl(): string {
   const envUrl = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL
   if (envUrl && !envUrl.startsWith('file:')) {
@@ -13,14 +34,26 @@ function getDatabaseUrl(): string {
   // Copy the bundled database file to /tmp on cold start.
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
     const tmpDbPath = '/tmp/custom.db'
-    if (!fs.existsSync(tmpDbPath)) {
-      const sourceDb = path.join(process.cwd(), 'db', 'custom.db')
-      if (fs.existsSync(sourceDb)) {
+    let needsCopy = true
+    try {
+      if (fs.existsSync(tmpDbPath) && fs.statSync(tmpDbPath).size > 1000) {
+        needsCopy = false
+      }
+    } catch {
+      needsCopy = true
+    }
+
+    if (needsCopy) {
+      const sourceDb = findSourceDb()
+      if (sourceDb) {
         try {
           fs.copyFileSync(sourceDb, tmpDbPath)
+          console.log(`[db] Copied SQLite database from ${sourceDb} to ${tmpDbPath}`)
         } catch (e) {
-          console.error('Failed to copy database to /tmp:', e)
+          console.error('[db] Failed to copy database to /tmp:', e)
         }
+      } else {
+        console.warn('[db] Could not locate source SQLite database to copy to /tmp')
       }
     }
     const resolved = `file:${tmpDbPath}`

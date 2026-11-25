@@ -8,13 +8,27 @@ export async function ensureSeeded() {
 
   seedingPromise = (async () => {
     try {
-      const userCount = await db.user.count().catch(() => -1)
-      if (userCount > 0) return // already has data
-      if (userCount === -1) return // table might not exist yet
+      // 1. Always guarantee Super Admin exists and is active
+      const adminPass = await bcrypt.hash('Admin@2026', 10)
+      await db.user.upsert({
+        where: { email: 'admin@etarnity.com' },
+        update: {
+          isActive: true,
+          role: 'SUPER_ADMIN',
+          passwordHash: adminPass,
+        },
+        create: {
+          email: 'admin@etarnity.com',
+          passwordHash: adminPass,
+          role: 'SUPER_ADMIN',
+          name: 'Platform Administrator',
+          isActive: true,
+        },
+      }).catch((e) => {
+        console.warn('[auto-seed] Super admin upsert error:', e?.message || e)
+      })
 
-      console.log('[auto-seed] Empty database detected. Seeding initial admin and demo data...')
-
-      // 1. Settings
+      // 2. Always guarantee settings exist
       await db.platformSetting.upsert({
         where: { id: 'singleton' },
         update: {},
@@ -23,7 +37,7 @@ export async function ensureSeeded() {
           companyName: 'Etarnity Global Innovation',
           logoText: 'ETARNITY',
           tagline: 'Connect. Schedule. Collaborate.',
-          landingHeadline: "Meet the minds behind Etarnity Global Innovation.",
+          landingHeadline: 'Meet the minds behind Etarnity Global Innovation.',
           landingSubtext: 'Book a private conversation with our board members — investors, partners and visionaries welcome.',
           bookingInstructions: 'Please select an available date and time. Your request will be reviewed by the board member before final confirmation.',
           contactEmail: 'contact@etarnity.com',
@@ -37,91 +51,86 @@ export async function ensureSeeded() {
           approvalMode: 'MANUAL',
           maintenanceMode: false,
         },
-      }).catch(() => null)
+      }).catch((e) => {
+        console.warn('[auto-seed] Platform settings upsert error:', e?.message || e)
+      })
 
-      // 2. Super Admin
-      const adminPass = await bcrypt.hash('Admin@2026', 10)
-      await db.user.upsert({
-        where: { email: 'admin@etarnity.com' },
-        update: {},
-        create: {
-          email: 'admin@etarnity.com',
-          passwordHash: adminPass,
-          role: 'SUPER_ADMIN',
-          name: 'Platform Administrator',
-          isActive: true,
-        },
-      }).catch(() => null)
-
-      // 3. Invitation code for board member registration
+      // 3. Always guarantee demo invitation code exists
       await db.invitation.upsert({
         where: { token: 'invite-demo-token' },
-        update: {},
+        update: {
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
         create: {
           email: 'newmember@etarnity.com',
           token: 'invite-demo-token',
           invitedName: 'Prospective Board Member',
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         },
-      }).catch(() => null)
+      }).catch((e) => {
+        console.warn('[auto-seed] Invitation upsert error:', e?.message || e)
+      })
 
-      // 4. Default Board Member (Kishor Biswas)
-      const memberPass = await bcrypt.hash('Board@2026', 10)
-      const kishorUser = await db.user.upsert({
-        where: { email: 'kishor@etarnity.com' },
-        update: {},
-        create: {
-          email: 'kishor@etarnity.com',
-          passwordHash: memberPass,
-          role: 'BOARD_MEMBER',
-          name: 'Kishor Biswas',
-          isActive: true,
-        },
-      }).catch(() => null)
+      // 4. Check if board members exist; if 0, seed initial demo members
+      const memberCount = await db.boardMember.count().catch(() => -1)
+      if (memberCount === 0) {
+        console.log('[auto-seed] No board members found. Seeding initial demo member (Kishor Biswas)...')
+        const memberPass = await bcrypt.hash('Board@2026', 10)
 
-      if (kishorUser) {
-        const kishorMember = await db.boardMember.upsert({
-          where: { slug: 'kishor-biswas' },
-          update: {},
+        const kishorUser = await db.user.upsert({
+          where: { email: 'kishor@etarnity.com' },
+          update: { isActive: true },
           create: {
-            userId: kishorUser.id,
-            slug: 'kishor-biswas',
-            name: 'Kishor Biswas',
-            photoUrl: '/members/kishor-biswas.png',
             email: 'kishor@etarnity.com',
-            phone: '+8801712345601',
-            location: 'Dhaka, Bangladesh',
-            designation: 'Creative Director & Co-Founder',
-            field: 'Design & Brand Strategy',
-            bio: 'Award-winning creative director shaping brand identities for global innovators. Co-founder of Etarnity Global Innovation with 14 years across design, branding and creative strategy.',
-            skills: '["UI/UX Design","Branding","Creative Strategy","Figma","Design Systems"]',
-            specializations: '["Brand Identity","Product Design","Creative Leadership"]',
-            achievements: '["Awwwards Site of the Day (2024)","Featured in Design Week Top 50","Mentor to 40+ designers"]',
-            durations: '[15,30,45,60]',
-            meetingMethods: JSON.stringify([
-              { type: 'GOOGLE_MEET', enabled: true },
-              { type: 'ZOOM', enabled: true },
-              { type: 'PHONE', enabled: true },
-            ]),
-            meetingDescription: 'A focused conversation on brand strategy, product design or creative collaboration with Etarnity.',
-            meetingInstructions: 'Please prepare a short summary of your goals. Portfolio links are welcome.',
-            displayOrder: 0,
-            isPublic: true,
-            isAvailable: true,
+            passwordHash: memberPass,
+            role: 'BOARD_MEMBER',
+            name: 'Kishor Biswas',
             isActive: true,
           },
         }).catch(() => null)
 
-        if (kishorMember) {
-          const rules = [1, 2, 3, 4, 5].flatMap((day) => [
-            { boardMemberId: kishorMember.id, dayOfWeek: day, startTime: '10:00', endTime: '13:00', isBreak: false },
-            { boardMemberId: kishorMember.id, dayOfWeek: day, startTime: '14:00', endTime: '17:00', isBreak: false },
-          ])
-          await db.availabilityRule.createMany({ data: rules }).catch(() => null)
+        if (kishorUser) {
+          const kishorMember = await db.boardMember.upsert({
+            where: { slug: 'kishor-biswas' },
+            update: { isPublic: true, isAvailable: true, isActive: true },
+            create: {
+              userId: kishorUser.id,
+              slug: 'kishor-biswas',
+              name: 'Kishor Biswas',
+              photoUrl: '/members/kishor-biswas.png',
+              email: 'kishor@etarnity.com',
+              phone: '+8801712345601',
+              location: 'Dhaka, Bangladesh',
+              designation: 'Creative Director & Co-Founder',
+              field: 'Design & Brand Strategy',
+              bio: 'Award-winning creative director shaping brand identities for global innovators. Co-founder of Etarnity Global Innovation with 14 years across design, branding and creative strategy.',
+              skills: '["UI/UX Design","Branding","Creative Strategy","Figma","Design Systems"]',
+              specializations: '["Brand Identity","Product Design","Creative Leadership"]',
+              achievements: '["Awwwards Site of the Day (2024)","Featured in Design Week Top 50","Mentor to 40+ designers"]',
+              durations: '[15,30,45,60]',
+              meetingMethods: JSON.stringify([
+                { type: 'GOOGLE_MEET', enabled: true },
+                { type: 'ZOOM', enabled: true },
+                { type: 'PHONE', enabled: true },
+              ]),
+              meetingDescription: 'A focused conversation on brand strategy, product design or creative collaboration with Etarnity.',
+              meetingInstructions: 'Please prepare a short summary of your goals. Portfolio links are welcome.',
+              displayOrder: 0,
+              isPublic: true,
+              isAvailable: true,
+              isActive: true,
+            },
+          }).catch(() => null)
+
+          if (kishorMember) {
+            const rules = [1, 2, 3, 4, 5].flatMap((day) => [
+              { boardMemberId: kishorMember.id, dayOfWeek: day, startTime: '10:00', endTime: '13:00', isBreak: false },
+              { boardMemberId: kishorMember.id, dayOfWeek: day, startTime: '14:00', endTime: '17:00', isBreak: false },
+            ])
+            await db.availabilityRule.createMany({ data: rules }).catch(() => null)
+          }
         }
       }
-
-      console.log('[auto-seed] Seeding completed.')
     } catch (e) {
       console.error('[auto-seed] Error during seeding:', e)
     } finally {
