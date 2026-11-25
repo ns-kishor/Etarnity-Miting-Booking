@@ -19,6 +19,7 @@ export type PlatformSettings = {
   minBookingNoticeHours: number
   approvalMode: 'MANUAL' | 'AUTO'
   maintenanceMode: boolean
+  referralCode?: string
 }
 
 export type PublicMember = {

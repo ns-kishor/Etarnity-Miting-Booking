@@ -22,6 +22,7 @@ type SettingsBody = Partial<{
   maxBookingWindowDays: number; minBookingNoticeHours: number
   approvalMode: 'MANUAL' | 'AUTO'
   maintenanceMode: boolean
+  referralCode: string
 }>
 
 /** PUT /api/master/settings — update website content and global settings. */
@@ -45,7 +46,7 @@ export async function PUT(req: Request) {
   if (Object.keys(errors).length > 0) return fail('Please fix the highlighted fields.', 400, { fieldErrors: errors })
 
   const data: Record<string, unknown> = {}
-  const strFields = ['companyName', 'logoText', 'tagline', 'landingHeadline', 'landingSubtext', 'bookingInstructions', 'contactEmail', 'footerText', 'seoTitle', 'seoDescription', 'defaultTimezone'] as const
+  const strFields = ['companyName', 'logoText', 'tagline', 'landingHeadline', 'landingSubtext', 'bookingInstructions', 'contactEmail', 'footerText', 'seoTitle', 'seoDescription', 'defaultTimezone', 'referralCode'] as const
   for (const f of strFields) {
     if (body[f] !== undefined) data[f] = (body[f] as string).trim()
   }

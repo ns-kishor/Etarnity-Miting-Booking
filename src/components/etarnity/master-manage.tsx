@@ -8,7 +8,7 @@ import { methodLabel, to12h, formatDateShort, formatDateHuman } from './types'
 import { SectionHeading, EmptyState, Loading, StatusBadge, Chip, InfoRow, FieldError } from './ui-bits'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Search, X, CheckCircle2, Ban, XCircle, CalendarRange, Trash2, Loader2, Save, ScrollText, MailOpen } from 'lucide-react'
+import { Search, X, CheckCircle2, Ban, XCircle, CalendarRange, Trash2, Loader2, Save, ScrollText, MailOpen, KeyRound, Copy } from 'lucide-react'
 
 const inputCls = 'w-full rounded-lg border border-input bg-white px-3 py-2.5 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 aria-[invalid=true]:border-red-400'
 
@@ -484,6 +484,43 @@ export function MasterSettingsSection() {
           >
             <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all', s.maintenanceMode ? 'left-[calc(100%-1.375rem)]' : 'left-0.5')} />
           </button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border/80 bg-white p-5 sm:p-6">
+        <p className="mb-2 flex items-center gap-2 text-sm font-bold">
+          <KeyRound className="h-4 w-4 text-muted-foreground" />
+          Board Member Referral Code
+        </p>
+        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+          All new board members use this referral code when creating an account (/signup/etarnity/board-member).
+          You can update this code anytime, and the new code will immediately be required for all future registrations.
+        </p>
+        <div className="max-w-md">
+          <label className="mb-1.5 block text-xs font-semibold">Active Referral Code <span className="text-red-500">*</span></label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={s.referralCode ?? 'EGI2025-2100-ETARNITY'}
+              onChange={(e) => upd('referralCode', e.target.value.trim().toUpperCase())}
+              className={cn(inputCls, 'font-mono text-base font-bold uppercase tracking-wider')}
+              placeholder="EGI2025-2100-ETARNITY"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(s.referralCode || 'EGI2025-2100-ETARNITY')
+                toast.success('Referral code copied to clipboard!')
+              }}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-secondary px-3.5 text-xs font-semibold hover:bg-secondary/80 active:scale-[0.98]"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copy
+            </button>
+          </div>
+          <p className="mt-1.5 text-[11px] text-muted-foreground">
+            Current default code: <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono font-bold text-zinc-900">EGI2025-2100-ETARNITY</code>
+          </p>
         </div>
       </div>
 

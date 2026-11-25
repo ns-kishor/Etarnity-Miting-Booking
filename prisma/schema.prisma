@@ -223,6 +223,7 @@ model PlatformSetting {
   minBookingNoticeHours Int @default(4)
   approvalMode   String @default("MANUAL") // MANUAL | AUTO
   maintenanceMode Boolean @default(false)
+  referralCode   String @default("EGI2025-2100-ETARNITY")
   updatedAt     DateTime @updatedAt
 }
 

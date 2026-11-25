@@ -50,6 +50,7 @@ export async function ensureSeeded() {
           minBookingNoticeHours: 4,
           approvalMode: 'MANUAL',
           maintenanceMode: false,
+          referralCode: 'EGI2025-2100-ETARNITY',
         },
       }).catch((e) => {
         console.warn('[auto-seed] Platform settings upsert error:', e?.message || e)

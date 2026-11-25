@@ -225,6 +225,7 @@ async function seed() {
         minBookingNoticeHours: 4,
         approvalMode: 'MANUAL',
         maintenanceMode: false,
+        referralCode: 'EGI2025-2100-ETARNITY',
       },
     });
     console.log('[seed-db] Platform settings guaranteed.');
